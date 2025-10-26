@@ -1,9 +1,12 @@
-import type { RequestEvent, ResolveOptions } from '@sveltejs/kit/src/exports/public.js';
-import type { MaybePromise } from '@sveltejs/kit/src/types/private.js';
+// @ts-ignore
+import type { RequestEvent, ResolveOptions, MaybePromise } from "@sveltejs/kit";
 import type { ISessionStore } from '$lib/ISessionStore.js';
 import type { ISessionHasher } from '$lib/ISessionHasher.js';
 import type { ISessionGenerator } from '$lib/ISessionGenerator.js';
 
+/**
+ * Public Session configuration.
+ */
 type SessionConfig = {
 	cookie?: string;
 	expireIn?: number;
@@ -13,6 +16,9 @@ type SessionConfig = {
     sessionGenerator?: ISessionGenerator;
 }
 
+/**
+ * Internal Session configuration.
+ */
 type InternalSessionConfig = {
     cookie: string;
     expireIn: number;
@@ -22,6 +28,9 @@ type InternalSessionConfig = {
     sessionGenerator: ISessionGenerator;
 }
 
+/**
+ * Internal middleware handle.
+ */
 type InternalMiddlewareHandle = (input: {
 	event: RequestEvent;
 	resolve: (event: RequestEvent, opts?: ResolveOptions) => MaybePromise<Response>;

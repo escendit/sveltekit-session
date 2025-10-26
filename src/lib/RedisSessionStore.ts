@@ -1,6 +1,9 @@
 import type { ISessionStore } from '$lib/ISessionStore.js';
 import {redis, type RedisClient} from "bun";
 
+/**
+ * Redis session store
+ */
 export class RedisSessionStore implements ISessionStore {
     private readonly client: RedisClient;
     public constructor() {

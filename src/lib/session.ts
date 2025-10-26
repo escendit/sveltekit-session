@@ -5,6 +5,11 @@ import type { ISessionStore } from '$lib/ISessionStore.js';
 import type { ISessionHasher } from '$lib/ISessionHasher.js';
 import type { ISessionGenerator } from '$lib/ISessionGenerator.js';
 
+/**
+ * Session middleware.
+ * @param sessionConfig
+ * @constructor
+ */
 const SessionMiddleware = (sessionConfig?: SessionConfig) => {
 
     const configuredSessionConfig: InternalSessionConfig = {
@@ -28,6 +33,12 @@ const SessionMiddleware = (sessionConfig?: SessionConfig) => {
     return handleSessionMiddleware;
 };
 
+/**
+ * Handle session middleware.
+ * @param event
+ * @param resolve
+ * @param options
+ */
 const handleSessionMiddlewareInternal: InternalMiddlewareHandle = async ({ event, resolve }, options) => {
 
     const store: ISessionStore = options.sessionStore;
@@ -98,6 +109,10 @@ const handleSessionMiddlewareInternal: InternalMiddlewareHandle = async ({ event
     return redirect(307, event.url);
 };
 
+/**
+ * Validate session configuration.
+ * @param configuration
+ */
 const ValidateSessionConfiguration = (configuration: InternalSessionConfig): Array<string> => {
 
     const errors: Array<string> = [];

@@ -3,6 +3,9 @@ import { InMemorySessionStore } from '$lib/InMemorySessionStore.js';
 import { DefaultSessionGenerator } from '$lib/DefaultSessionGenerator.js';
 import { DefaultSessionHasher } from '$lib/DefaultSessionHasher.js';
 
+/**
+ * Default configuration
+ */
 const Defaults: InternalSessionConfig = {
 	cookie: "session.id",
 	expireIn: 86400,

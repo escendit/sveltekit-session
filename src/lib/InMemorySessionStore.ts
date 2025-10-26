@@ -1,5 +1,8 @@
 import type { ISessionStore } from '$lib/ISessionStore.js';
 
+/**
+ * In memory session store
+ */
 export class InMemorySessionStore implements ISessionStore {
 	private readonly datastore: Record<string, Record<string, string | null> | undefined>;
 	private readonly expirations: Record<string, number | undefined>;
