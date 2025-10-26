@@ -25,10 +25,7 @@ const SessionMiddleware = (sessionConfig?: SessionConfig) => {
     }
 
     const handleSessionMiddleware: Handle = async (request) => {
-        return handleSessionMiddlewareInternal(request, {
-            ...Defaults,
-            ...sessionConfig
-        });
+        return handleSessionMiddlewareInternal(request, configuredSessionConfig);
     };
     return handleSessionMiddleware;
 };
@@ -42,7 +39,7 @@ const SessionMiddleware = (sessionConfig?: SessionConfig) => {
 const handleSessionMiddlewareInternal: InternalMiddlewareHandle = async ({ event, resolve }, options) => {
 
     const store: ISessionStore = options.sessionStore;
-    const hasher: ISessionHasher = options.sessionHasher
+    const hasher: ISessionHasher = options.sessionHasher;
     const generator: ISessionGenerator = options.sessionGenerator;
 
     // Skip favicon requests
