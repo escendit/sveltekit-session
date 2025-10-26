@@ -1,8 +1,8 @@
 import type { ISessionStore } from '$lib/ISessionStore.js';
 
 export class InMemorySessionStore implements ISessionStore {
-    private readonly datastore: Record<string, Record<string, string | null>>;
-    private readonly expirations: Record<string, number>;
+    private readonly datastore: Record<string, Record<string, string | null> | undefined>;
+    private readonly expirations: Record<string, number | undefined>;
 
     public constructor() {
         this.datastore = {};
@@ -16,19 +16,19 @@ export class InMemorySessionStore implements ISessionStore {
         }
 
         // Does it exist?
-        const result = Object.keys(this.datastore).find((a) => a === sessionKey);
+        const result = this.datastore[sessionKey];
 
         if (result === undefined) {
             return Promise.resolve(false);
         }
 
-        const expires = Object.keys(this.expirations).find(a => a === sessionKey);
+        const expires = this.expirations[sessionKey];
 
         if (expires === undefined) {
             return Promise.resolve(true);
         }
 
-        if (new Date() > new Date(parseInt(expires))) {
+        if (new Date() > new Date(expires)) {
             // we can also remove session keys if they're expired
             delete this.datastore[sessionKey];
             delete this.expirations[sessionKey];
@@ -46,10 +46,20 @@ export class InMemorySessionStore implements ISessionStore {
 		return Promise.resolve(seconds);
 	}
 	getSingle(sessionKey: string): Promise<string | null> {
+		if (this.datastore[sessionKey] === undefined) {
+			return Promise.resolve(null);
+		}
+
         const session = this.datastore[sessionKey]['default'];
         return Promise.resolve(session);
 	}
 	setSingle(sessionKey: string, value: string): Promise<string> {
+
+		// check if session exists, and create empty object.
+		if (this.datastore[sessionKey] === undefined) {
+			this.datastore[sessionKey] = {};
+		}
+
         this.datastore[sessionKey]['default'] = value;
         return Promise.resolve('OK');
 	}
@@ -57,6 +67,9 @@ export class InMemorySessionStore implements ISessionStore {
         const results: Array<string | null> = [];
 
         for (const key in values) {
+			if (this.datastore[sessionKey] === undefined) {
+				this.datastore[sessionKey] = {};
+			}
             results.push(this.datastore[sessionKey][key]);
         }
 

@@ -115,11 +115,11 @@ const ValidateSessionConfiguration = (configuration: InternalSessionConfig): Arr
     }
 
     if (!configuration.sessionHasher) {
-        errors.push("Session generator is missing");
+        errors.push("Session hasher is missing");
     }
 
     if (!configuration.sessionStore) {
-        errors.push("Session generator is missing");
+        errors.push("Session store is missing");
     }
 
     return errors;
