@@ -118,7 +118,7 @@ const ValidateSessionConfiguration = (configuration: InternalSessionConfig): Arr
         errors.push("Cookie is missing");
     }
 
-    if (isNaN(configuration.expireIn)) {
+	if (!Number.isFinite(configuration.expireIn) || configuration.expireIn <= 0) {
         errors.push("Expire In is not a number");
     }
 
@@ -133,6 +133,10 @@ const ValidateSessionConfiguration = (configuration: InternalSessionConfig): Arr
     if (!configuration.sessionStore) {
         errors.push("Session store is missing");
     }
+
+	if (!Number.isFinite(configuration.size) || configuration.size < 128) {
+		errors.push("Size is not a number or is less than 128");
+	}
 
     return errors;
 };
