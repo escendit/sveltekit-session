@@ -64,10 +64,20 @@ const handleSessionMiddlewareInternal: InternalMiddlewareHandle = async ({ event
 
             // populate session id & identity
             event.locals.sessionId = cookieValue;
-            event.locals.session = {
-                identity: identity ? JSON.parse(identity) : null,
-                created
-            };
+
+			try {
+				event.locals.session = {
+					identity: identity ? JSON.parse(identity) : null,
+					created
+				};
+			}
+			catch (error) {
+				event.locals.session = {
+					identity: null,
+					created
+				}
+			}
+
             return resolve(event);
         }
     }
