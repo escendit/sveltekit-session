@@ -1,5 +1,4 @@
-// @ts-ignore
-import type { RequestEvent, ResolveOptions, MaybePromise } from "@sveltejs/kit";
+import type { RequestEvent, ResolveOptions } from '@sveltejs/kit';
 import type { ISessionStore } from '$lib/ISessionStore.js';
 import type { ISessionHasher } from '$lib/ISessionHasher.js';
 import type { ISessionGenerator } from '$lib/ISessionGenerator.js';
@@ -10,34 +9,35 @@ import type { ISessionGenerator } from '$lib/ISessionGenerator.js';
 type SessionConfig = {
 	cookie?: string;
 	expireIn?: number;
-    size?: number;
-    sessionStore?: ISessionStore;
-    sessionHasher?: ISessionHasher;
-    sessionGenerator?: ISessionGenerator;
-}
+	size?: number;
+	sessionStore?: ISessionStore;
+	sessionHasher?: ISessionHasher;
+	sessionGenerator?: ISessionGenerator;
+};
 
 /**
  * Internal Session configuration.
  */
 type InternalSessionConfig = {
-    cookie: string;
-    expireIn: number;
-    size: number;
-    sessionStore: ISessionStore;
-    sessionHasher: ISessionHasher;
-    sessionGenerator: ISessionGenerator;
-}
+	cookie: string;
+	expireIn: number;
+	size: number;
+	sessionStore: ISessionStore;
+	sessionHasher: ISessionHasher;
+	sessionGenerator: ISessionGenerator;
+};
+
+type MaybePromise<T> = T | Promise<T>;
 
 /**
  * Internal middleware handle.
  */
-type InternalMiddlewareHandle = (input: {
-	event: RequestEvent;
-	resolve: (event: RequestEvent, opts?: ResolveOptions) => MaybePromise<Response>;
-}, options: InternalSessionConfig) => MaybePromise<Response>;
+type InternalMiddlewareHandle = (
+	input: {
+		event: RequestEvent;
+		resolve: (event: RequestEvent, opts?: ResolveOptions) => MaybePromise<Response>;
+	},
+	options: InternalSessionConfig
+) => MaybePromise<Response>;
 
-export {
-    type SessionConfig,
-	type InternalMiddlewareHandle,
-    type InternalSessionConfig
-}
+export { type SessionConfig, type InternalMiddlewareHandle, type InternalSessionConfig };
