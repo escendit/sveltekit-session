@@ -112,7 +112,23 @@ const handleSessionMiddlewareInternal: InternalMiddlewareHandle = async ({ event
 
     // we have to redirect to write a cookie
     // we avoid issues with non-existing cookies in after middleware...
-    return redirect(307, event.url);
+	// Redirect GET requests so the browser sends the cookie on the next request
+	if (event.request.method === 'GET') {
+		throw redirect(303, event.url); // 303 ensures subsequent request is GET
+	}
+
+	// For non-GET, populate locals and continue without a redirect to avoid replaying the request
+	event.locals.sessionId = sessionId;
+	event.locals.session = {
+		identity: null,
+		created: Date.now().toString()
+	};
+
+	// Return a 405 Method Not Allowed response
+	// This should be handled at all, so if we get to here, something is wrong
+	return new Response(null, {
+		status: 405,
+	});
 };
 
 /**
