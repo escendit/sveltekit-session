@@ -75,7 +75,7 @@ const handleSessionMiddlewareInternal: InternalMiddlewareHandle = async ({ event
 				event.locals.session = {
 					identity: null,
 					created
-				}
+				};
 			}
 
             return resolve(event);
