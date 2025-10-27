@@ -80,7 +80,7 @@ const handleSessionMiddlewareInternal: InternalMiddlewareHandle = async ({ event
         JSON.stringify(null),
         'created',
         Date.now().toString()
-    ])
+    ]);
 
     await store.expire(sessionKey, expiresIn);
 
