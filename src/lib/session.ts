@@ -117,13 +117,6 @@ const handleSessionMiddlewareInternal: InternalMiddlewareHandle = async ({ event
 		throw redirect(303, event.url); // 303 ensures subsequent request is GET
 	}
 
-	// For non-GET, populate locals and continue without a redirect to avoid replaying the request
-	event.locals.sessionId = sessionId;
-	event.locals.session = {
-		identity: null,
-		created: Date.now().toString()
-	};
-
 	// Return a 405 Method Not Allowed response
 	// This should be handled at all, so if we get to here, something is wrong
 	return new Response(null, {
