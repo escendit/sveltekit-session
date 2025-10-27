@@ -6,5 +6,5 @@ export interface ISessionGenerator {
 	 * Generate a session key.
 	 * @param size
 	 */
-    generate(size: number): Buffer;
+    generate(size: number): Uint8Array;
 }

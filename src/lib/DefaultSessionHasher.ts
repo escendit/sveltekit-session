@@ -9,7 +9,7 @@ export class DefaultSessionHasher implements ISessionHasher {
 	 * Hash a binary array from a buffer.
 	 * @param buffer
 	 */
-    hash(buffer: Buffer): string {
+    hash(buffer: Uint8Array): string {
         return binary_to_base58(buffer);
     }
 }

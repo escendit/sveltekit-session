@@ -9,7 +9,7 @@ export class DefaultSessionGenerator implements ISessionGenerator {
 	 * Generate a session key.
 	 * @param size
 	 */
-    generate(size: number): Buffer {
+    generate(size: number): Uint8Array {
         return crypto.randomBytes(size);
     }
 }
