@@ -107,7 +107,6 @@ const handleSessionMiddlewareInternal: InternalMiddlewareHandle = async ({ event
         secure: true,
         sameSite: 'strict',
         httpOnly: true,
-        partitioned: true,
         priority: 'high'
     });
 
@@ -129,7 +128,7 @@ const ValidateSessionConfiguration = (configuration: InternalSessionConfig): Arr
     }
 
 	if (!Number.isFinite(configuration.expireIn) || configuration.expireIn <= 0) {
-        errors.push("Expire In is not a number");
+		errors.push("expireIn must be a positive finite number (seconds)");
     }
 
     if (!configuration.sessionGenerator) {
