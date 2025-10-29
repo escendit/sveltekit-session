@@ -37,8 +37,13 @@ jobs:
         run: echo "VERSION=${TAG#v}" >> $GITHUB_ENV
       - name: Set Version
         run: npm version $VERSION --no-git-tag-version
+      # Setup npmrc
+      - name: Create .npmrc
+        run: |
+          {
+            echo "@${{ github.repository_owner }}:registry=https://npm.pkg.github.com"
+            echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}"
+          } | tee -a .npmrc
       # Publish
       - name: Publish
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bun publish --registry https://npm.pkg.github.com/
+        run: npm publish
