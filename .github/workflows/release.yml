@@ -33,7 +33,6 @@ jobs:
       # Build
       - name: Build
         run: bun run build
-      # Set Version
-      - name: Set Version
-        run: npm version 0.0.1 ${{ github.event.release.tag_name }} --no-git-tag-version
-        # if: github.event_name == 'release'
+      # Test
+      # - name: Test
+      #  run: bun run test
