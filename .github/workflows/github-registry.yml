@@ -3,10 +3,12 @@ name: "GitHub"
 on:
   workflow_run:
     workflows:
-      - Release
+      - "Release"
     types:
       - completed
-
+permissions:
+  packages: write
+  contents: read
 jobs:
   pack:
     # if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
