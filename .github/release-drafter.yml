@@ -26,9 +26,6 @@ categories:
   - title: "🔄 Dependency Updates"
     labels:
       - "dependencies/github-actions"
-      - "dependencies/containers"
-      - "dependencies/dotnet-sdk"
-      - "dependencies/nuget"
   - title: "🧑🏼‍💻 Development Tooling"
     labels:
       - "area/dev-tooling"
@@ -56,11 +53,6 @@ autolabeler:
       - ".github/**/*"
       - ".editorconfig"
       - ".gitignore"
-      - ".globalconfig"
-      - "Directory.Build.props"
-      - "Directory.Packages.props"
-      - "global.json"
-      - "nuget.config"
   - label: "documentation"
     files:
       - "docs/**/*"
