@@ -12,11 +12,11 @@ updates:
       - dependencies/github-actions
   # npm
   - package-ecosystem: npm
-    directory:
-      schedule:
-        interval: weekly
-        day: sunday
-        timezone: Europe/Zurich
-        time: "03:00"
-      labels:
-        - dependencies/npmjs
+    directory: /
+    schedule:
+      interval: weekly
+      day: sunday
+      timezone: Europe/Zurich
+      time: "03:00"
+    labels:
+      - dependencies/npmjs
