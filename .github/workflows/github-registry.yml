@@ -15,18 +15,6 @@ jobs:
     name: "Pack"
     runs-on: ubuntu-latest
     steps:
-      - name: "Variables"
-        run: |
-          echo "wr.event: ${{ github.event.workflow_run.event }}"
-          echo "wr.conclusion: ${{ github.event.workflow_run.conclusion }}"
-          echo "wr.head_branch: ${{ github.event.workflow_run.head_branch }}"
-          echo "wr.id: ${{ github.event.workflow_run.id }}"
-          echo "wr.name: ${{ github.event.workflow_run.name }}"
-          echo "wr.run_number: ${{ github.event.workflow_run.run_number }}"
-          echo "wr.run_attempt: ${{ github.event.workflow_run.run_attempt }}"
-          echo "wr.url: ${{ github.event.workflow_run.url }}"
-          echo "wr.head_sha: ${{ github.event.workflow_run.head_sha }}"
-          echo "wr.head_ref: ${{ github.event.workflow_run.head_ref }}"
       # Checkout
       - name: Checkout
         uses: actions/checkout@v5

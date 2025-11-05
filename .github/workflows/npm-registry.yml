@@ -28,13 +28,19 @@ jobs:
         run: bun install
       # Set Version
       - name: Set TAG variable
-        run: echo "TAG=${{ github.event.release.tag_name }}" >> $GITHUB_ENV
+        run: |
+          echo "Full ref: ${{ github.event.workflow_run.head_branch }}"
+          echo "TAG=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_ENV
       - name: Set VERSION variable
         run: echo "VERSION=${TAG#v}" >> $GITHUB_ENV
       - name: Set Version
         run: npm version $VERSION --no-git-tag-version
+      # Set Authentication
+      - name: Create .npmrc
+        run: |
+          {
+            echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}"
+          } | tee -a .npmrc
       # Publish
       - name: Publish
         run: npm publish --access public
-        env:
-          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
