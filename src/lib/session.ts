@@ -4,6 +4,7 @@ import { Defaults } from '$lib/config.js';
 import type { ISessionStore } from '$lib/ISessionStore.js';
 import type { ISessionHasher } from '$lib/ISessionHasher.js';
 import type { ISessionGenerator } from '$lib/ISessionGenerator.js';
+import { sequence } from '@sveltejs/kit/hooks';
 
 /**
  * Session middleware.
@@ -26,9 +27,21 @@ const SessionMiddleware = (sessionConfig?: SessionConfig) => {
 	const handleSessionMiddleware: Handle = async (request) => {
 		return handleSessionMiddlewareInternal(request, configuredSessionConfig);
 	};
-	return handleSessionMiddleware;
+
+	const prepareSessionMiddleware: Handle = async (request) => {
+		return handlePrepareSessionMiddleware(request, configuredSessionConfig);
+	}
+	return sequence(prepareSessionMiddleware, handleSessionMiddleware);
 };
 
+const handlePrepareSessionMiddleware: InternalMiddlewareHandle = async (
+	{ event, resolve },
+	options) => {
+	event.locals.store = options.sessionStore;
+	event.locals.hasher = options.sessionHasher;
+	event.locals.generator = options.sessionGenerator;
+	return resolve(event);
+};
 /**
  * Handle session middleware.
  * @param event
@@ -39,9 +52,9 @@ const handleSessionMiddlewareInternal: InternalMiddlewareHandle = async (
 	{ event, resolve },
 	options
 ) => {
-	const store: ISessionStore = options.sessionStore;
-	const hasher: ISessionHasher = options.sessionHasher;
-	const generator: ISessionGenerator = options.sessionGenerator;
+	const store: ISessionStore = event.locals.store;
+	const hasher: ISessionHasher = event.locals.hasher;
+	const generator: ISessionGenerator = event.locals.generator;
 
 	// Skip favicon requests
 	if (event.url.pathname === '/favicon.ico') {
