@@ -1,58 +1,205 @@
-# Svelte library
+# @escendit/sveltekit-session
 
-Everything you need to build a Svelte library, powered by [`sv`](https://npmjs.com/package/sv).
+Lightweight session middleware for SvelteKit. It issues and persists a secure session ID, stores minimal session data in a pluggable store, and exposes the session on `event.locals`.
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+Works out of the box with an in‑memory store for development, and includes a Redis store for production when running on Bun.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Simple `SessionMiddleware` you add to `hooks.server.ts`
+- Pluggable session storage via `ISessionStore` (in‑memory and Redis implementations included)
+- Secure cookie with `httpOnly`, `secure`, `sameSite: 'strict'`, `priority: 'high'`
+- Session ID generation using Node crypto and base58 encoding by default
+- Sensible defaults with runtime validation
+- Explicit behavior for first request and mutation safety
 
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Installation
 
 ```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+npm i @escendit/sveltekit-session
+# or
+pnpm add @escendit/sveltekit-session
+# or
+bun add @escendit/sveltekit-session
 ```
 
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
+Peer dependencies:
+- `svelte@^5`
+- `@sveltejs/kit@^2` (app peer, used by you)
 
-## Building
+Notes:
+- The default in‑memory store works everywhere (Node/Bun) and is great for local development.
+- The provided `RedisSessionStore` uses Bun's built‑in Redis client. If you want Redis, run your app with Bun.
 
-To build your library:
+## Quick start
 
-```sh
-npm pack
+Add the middleware to your `src/hooks.server.ts`:
+
+```ts
+// src/hooks.server.ts
+import { sequence } from '@sveltejs/kit/hooks';
+import type { Handle } from '@sveltejs/kit';
+import { SessionMiddleware } from '@escendit/sveltekit-session';
+
+export const handle: Handle = sequence(
+  SessionMiddleware({
+    cookie: 'session.id',
+    expireIn: 60 * 60 * 24 // 1 day (seconds)
+  })
+);
 ```
 
-To create a production version of your showcase app:
+Access the session in your endpoints or load functions via `event.locals`:
 
-```sh
-npm run build
+```ts
+// src/routes/+page.server.ts
+import type { Actions, PageServerLoad } from './$types';
+
+export const load: PageServerLoad = async ({ locals }) => {
+  // locals.sessionId: string
+  // locals.session: { identity: unknown | null; created: string | null }
+  return {
+    sessionId: locals.sessionId,
+    session: locals.session
+  };
+};
 ```
 
-You can preview the production build with `npm run preview`.
+## How it works
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+- On each request the middleware checks for the configured session cookie.
+- If a valid session exists in the store, it populates:
+  - `event.locals.sessionId`
+  - `event.locals.session = { identity: any | null, created: string | null }`
+- If there is no valid session yet:
+  - It generates a new random ID, stores minimal fields (`identity=null`, `created=timestamp`) and sets an expiry on the store entry.
+  - It sets a secure cookie and `Cache-Control: no-store` header.
+  - For `GET` requests, it performs a `303` redirect to the same URL so the browser will include the cookie on the next request.
+  - For non‑`GET` requests without an existing session, it returns `405` to ensure the client establishes a session via `GET` first.
 
-## Publishing
+## Configuration
 
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
+All options are optional; the following are the defaults applied internally:
 
-To publish your library to [npm](https://www.npmjs.com):
+- `cookie`: `"session.id"`
+- `expireIn`: `86400` (seconds)
+- `size`: `128` (entropy bytes for ID generation)
+- `sessionStore`: `new InMemorySessionStore()`
+- `sessionHasher`: `new DefaultSessionHasher()` (encodes to base58)
+- `sessionGenerator`: `new DefaultSessionGenerator()` (uses `crypto.randomBytes`)
 
-```sh
-npm publish
+Example with custom options:
+
+```ts
+import { SessionMiddleware, InMemorySessionStore } from '@escendit/sveltekit-session';
+
+export const handle = sequence(
+  SessionMiddleware({
+    cookie: 'sid',
+    expireIn: 60 * 10, // 10 minutes
+    size: 256,
+    sessionStore: new InMemorySessionStore()
+  })
+);
 ```
+
+## Setting identity or other session fields
+
+This library keeps the session store minimal by design. If you want to associate an identity (e.g., after login), create and reuse the same store instance you pass into the middleware.
+
+```ts
+// src/lib/session-store.ts
+import { InMemorySessionStore } from '@escendit/sveltekit-session';
+export const sessionStore = new InMemorySessionStore();
+```
+
+```ts
+// src/hooks.server.ts
+import { sequence } from '@sveltejs/kit/hooks';
+import { SessionMiddleware } from '@escendit/sveltekit-session';
+import { sessionStore } from '$lib/session-store';
+
+export const handle = sequence(
+  SessionMiddleware({ sessionStore })
+);
+```
+
+```ts
+// src/routes/login/+page.server.ts (example)
+import type { Actions } from './$types';
+import { sessionStore } from '$lib/session-store';
+
+export const actions: Actions = {
+  default: async ({ locals }) => {
+    const sessionKey = `session:${locals.sessionId}`;
+    await sessionStore.setMultiple(sessionKey, [
+      'identity', JSON.stringify({ userId: '123', roles: ['user'] })
+    ]);
+    // Optionally refresh TTL
+    // await sessionStore.expire(sessionKey, 60 * 60 * 24);
+    return { success: true };
+  }
+};
+```
+
+The middleware will deserialize the `identity` JSON on subsequent requests and expose it on `locals.session.identity`.
+
+## Using Redis (Bun runtime)
+
+The package includes a Redis store that uses Bun's built‑in Redis client.
+
+```ts
+// src/lib/session-store.ts
+import { RedisSessionStore } from '@escendit/sveltekit-session';
+export const sessionStore = new RedisSessionStore();
+```
+
+```ts
+// src/hooks.server.ts
+import { sequence } from '@sveltejs/kit/hooks';
+import { SessionMiddleware } from '@escendit/sveltekit-session';
+import { sessionStore } from '$lib/session-store';
+
+export const handle = sequence(
+  SessionMiddleware({ sessionStore, cookie: 'sid', expireIn: 60 * 60 })
+);
+```
+
+Requirements:
+- Run your SvelteKit server with Bun (`bun run dev` / `bun run start`).
+- Ensure your Redis instance is reachable per Bun's configuration. See Bun docs for `bun:redis`.
+
+## API
+
+Package exports:
+- `SessionMiddleware(sessionConfig?: SessionConfig): Handle`
+- `type SessionConfig` — public configuration shape
+- `type ISessionStore` — storage interface with `exists`, `expire`, `getSingle`, `setSingle`, `getMultiple`, `setMultiple`
+- `type ISessionHasher` — `hash(buffer: Uint8Array): string`
+- `type ISessionGenerator` — `generate(size: number): Uint8Array`
+- `InMemorySessionStore` — default dev store
+- `RedisSessionStore` — Bun Redis store
+- `DefaultSessionGenerator` — uses Node `crypto.randomBytes`
+- `DefaultSessionHasher` — base58 encoding
+
+## Scripts
+
+Common scripts from `package.json`:
+- `dev` — start vite dev server (Bun)
+- `build` — build library and package
+- `preview` — preview built app
+- `check` / `check:watch` — typecheck with `svelte-check`
+- `format` / `lint` — Prettier
+- `test` — run unit tests (Vitest)
+
+## Notes
+
+- Cookies are set with `secure: true`; when testing locally on `http://localhost`, ensure your browser still handles the cookie as expected or use HTTPS.
+- First request sets the session; non‑GET requests before a session is established will receive `405`.
+- The library sets `Cache-Control: no-store` on session‑issuing responses to avoid caching issues.
+
+## License
+
+Licensed under the Apache License, Version 2.0. See the `LICENSE` file for the full text.
+
+Copyright (c) 2025 Escendit.
