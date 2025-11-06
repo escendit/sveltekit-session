@@ -82,7 +82,7 @@ declare global {
       hasher: ISessionHasher;
       generator: ISessionGenerator;
       sessionId: string;
-      session: unknown;
+      session: any;
     }
   }
 }
