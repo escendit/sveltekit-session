@@ -1,6 +1,7 @@
 {
     "name": "@escendit/sveltekit-session",
     "version": "0.0.0",
+	"license": "Apache-2.0",
     "scripts": {
         "dev": "bunx --bun vite dev",
         "build": "vite build && npm run prepack",
