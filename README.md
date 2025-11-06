@@ -53,16 +53,40 @@ Access the session in your endpoints or load functions via `event.locals`:
 
 ```ts
 // src/routes/+page.server.ts
-import type { Actions, PageServerLoad } from './$types';
+import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
-  // locals.sessionId: string
-  // locals.session: { identity: unknown | null; created: string | null }
+  // Available on locals:
+  // - locals.store: ISessionStore
+  // - locals.hasher: ISessionHasher
+  // - locals.generator: ISessionGenerator
+  // - locals.sessionId: string (present once a session exists)
+  // - locals.session: { identity: unknown | null; created: string | null }
   return {
     sessionId: locals.sessionId,
     session: locals.session
   };
 };
+```
+
+Locals interface (for reference):
+
+```ts
+// src/app.d.ts
+import type { ISessionGenerator, ISessionHasher, ISessionStore } from '@escendit/sveltekit-session';
+
+declare global {
+  namespace App {
+    interface Locals {
+      store: ISessionStore;
+      hasher: ISessionHasher;
+      generator: ISessionGenerator;
+      sessionId: string;
+      session: unknown;
+    }
+  }
+}
+export {};
 ```
 
 ## How it works
@@ -71,6 +95,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 - If a valid session exists in the store, it populates:
   - `event.locals.sessionId`
   - `event.locals.session = { identity: any | null, created: string | null }`
+  - Always available: `event.locals.store`, `event.locals.hasher`, `event.locals.generator` (from middleware config)
 - If there is no valid session yet:
   - It generates a new random ID, stores minimal fields (`identity=null`, `created=timestamp`) and sets an expiry on the store entry.
   - It sets a secure cookie and `Cache-Control: no-store` header.
