@@ -1,5 +1,9 @@
 # @escendit/sveltekit-session
 
+> [!IMPORTANT]
+> The repository has been moved to: [https://github.com/escendit/sveltekit-extensions](https://github.com/escendit/sveltekit-extensions)
+
+
 Lightweight session middleware for SvelteKit. It issues and persists a secure session ID, stores minimal session data in a pluggable store, and exposes the session on `event.locals`.
 
 Works out of the box with an in‑memory store for development, and includes a Redis store for production when running on Bun.
